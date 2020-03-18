@@ -8,8 +8,8 @@ namespace ServiceBusReceiver
 {
     class Program
     {
-        static string ConnectionString = "";
-        static string QueueName = "";
+        static string ConnectionString = "Endpoint=sb://test-bus-test.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=EkLD4HvmS+qS3AiVua9g10BVUK395bC0AWbWK2/RjMc=";
+        static string QueueName = "queue";
         static IQueueClient client;
 
         static void Main(string[] args)
@@ -30,7 +30,7 @@ namespace ServiceBusReceiver
             var messageOptions = new SessionHandlerOptions(ExceptionReceivedHandler)
             {
                 MaxConcurrentSessions = 1,
-                AutoComplete = false
+                AutoComplete = false,
             };
 
             client.RegisterSessionHandler(ProcessMessagesAsync, messageOptions);
@@ -40,7 +40,7 @@ namespace ServiceBusReceiver
         {
             Console.WriteLine($"Received message: SequenceNumber:{message.SystemProperties.SequenceNumber} Text:{Encoding.UTF8.GetString(message.Body)}");
 
-            await client.CompleteAsync(message.SystemProperties.LockToken);
+            await Task.CompletedTask;
         }
 
         static Task ExceptionReceivedHandler(ExceptionReceivedEventArgs exceptionReceivedEventArgs)

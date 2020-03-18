@@ -8,8 +8,8 @@ namespace ServiceBus
 {
     class Program
     {
-        static string ConnectionString = "";
-        static string QueueName = "";
+        static string ConnectionString = "Endpoint=sb://test-bus-test.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=EkLD4HvmS+qS3AiVua9g10BVUK395bC0AWbWK2/RjMc=";
+        static string QueueName = "queue";
         static IQueueClient client;
         const int messageCount = 10;
 
@@ -29,6 +29,8 @@ namespace ServiceBus
                 foreach(string m in messages)
                 {
                     var bytes = new Message(Encoding.UTF8.GetBytes(m));
+                    bytes.MessageId = Guid.NewGuid().ToString();
+                    bytes.SessionId = Guid.NewGuid().ToString();
                     Console.WriteLine($"Send {m}");
                     await client.SendAsync(bytes);
                 }
