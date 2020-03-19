@@ -14,15 +14,23 @@ namespace BlobFilesStorage
 
         static async Task Main(string[] args)
         {
-            await PutIntoStorage("./smith.jpg", "smith.jpg");
+            //await PutIntoStorage("./smith.jpg", "smith.jpg");
+            await ReadFromStorage("./smith-new.jpg", "smith.jpg");
         }
 
         private static async Task PutIntoStorage(string path, string fileName)
         {
             using (var stream = new FileStream(path, FileMode.Open))
             {
-                //await UploadFileToStorage(stream, fileName);
-                await DownloadFileFromStorage(fileName);
+                await UploadFileToStorage(stream, fileName);
+            }
+        }
+
+        private static async Task ReadFromStorage(string path, string fileName)
+        {
+            using (var stream = new FileStream(path, FileMode.OpenOrCreate))
+            {
+                await DownloadFileFromStorage(stream, fileName);
             }
         }
 
@@ -40,7 +48,7 @@ namespace BlobFilesStorage
             return await Task.FromResult(reference);
         }
 
-        public static async Task DownloadFileFromStorage(string fileName)
+        public static async Task DownloadFileFromStorage(Stream fileStream, string fileName)
         {
             StorageCredentials storageCredentials = new StorageCredentials(AccountName, AccountKey);
             CloudStorageAccount storageAccount = new CloudStorageAccount(storageCredentials, true);
@@ -50,16 +58,11 @@ namespace BlobFilesStorage
             CloudBlockBlob blockBlob = cloudBlobContainer.GetBlockBlobReference(fileName);
 
             MemoryStream memStream = new MemoryStream();
-
+            
             await blockBlob.DownloadToStreamAsync(memStream);
-
-            using (FileStream downloadFileStream = File.OpenWrite("./smith-download.jpg"))
-            {
-                memStream.WriteTo(downloadFileStream);
-            }
-
+            memStream.WriteTo(fileStream);
             memStream.Close();
-            memStream.Dispose();
         }
+    
     }
 }

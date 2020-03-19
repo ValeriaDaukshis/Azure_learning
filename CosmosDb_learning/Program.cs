@@ -2,18 +2,21 @@
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
 using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Azure.Cosmos.Linq;
+using Container = Microsoft.Azure.Cosmos.Container;
 
 namespace CosmosDb_learning
 {
     class Program
     {
-        static readonly string endpointUrl = "https://cosmosdb-learning.documents.azure.com:443/";
-        static readonly string autorizationKey = "ASmg80a2J3wZ14ZL2oSTycMH5vGAv2wDmu4NYs9IPBLs47fA5cr9awIMpVyvb0TDmDLkDLTh1BxkBIPEYZmJow==";     
+        static readonly string endpointUrl = "https://cuzton.documents.azure.com:443/";
+        static readonly string autorizationKey = "5V30yHvoAiFp9FltO9syNt4latlnKLMbxZ0JB654DnBgNSkmHTPmnb4Rceh82xX1IOPvbvQzgo3Yjp4S3j25uA==";     
         static CosmosClient client;
-        static Microsoft.Azure.Cosmos.Container container;
+        static Container container;
         static Database database;
 
-        private static string databaseId = "FilmDatabase";
+        private static string databaseId = "FilmDb";
         private static string containerId = "FilmContainer";
 
         private static List<Film> films;
@@ -23,9 +26,13 @@ namespace CosmosDb_learning
             CreateCollection();
             await CreateDb();
             await CreateContainerAsync();
-            //await ReadAllData();
+
             //await InsertNewItem(films[0]);
+            //await InsertNewItem(films[1]);
             //await UpdateItem(films[0]);
+            await ReadAllData();
+            //await GetById("1");
+            Console.ReadKey();
         }
 
         private static async Task CreateDb()
@@ -68,6 +75,22 @@ namespace CosmosDb_learning
                 }
             }
         }
+
+        static async Task GetById(string id)
+        {
+            var queriable = container.GetItemLinqQueryable<Film>();
+            var res = queriable
+                .Select(a => a)
+                .Where(b => b.Id == id);
+            var iterator = res.ToFeedIterator();
+            while (iterator.HasMoreResults)
+            {
+                foreach (var f in await iterator.ReadNextAsync())
+                {
+                    Console.WriteLine($"\tRead by id {f.Id}\n {f.Country}\n {f.Name}\n {f.EnderDate}");
+                }
+            }
+        }
         
 
         static async Task UpdateItem(Film f)
@@ -95,7 +118,5 @@ namespace CosmosDb_learning
                 },
             };
         }
-
-        
     }
 }
